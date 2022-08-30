@@ -46,7 +46,7 @@ h1{
 
 .container {
   max-width: 700px;
-  height: 700px;
+  height: 500px;
   margin: auto;
   padding: 0 1rem;
   position: relative;
@@ -61,11 +61,6 @@ h1{
 .app .top {
   width: 100%;
   margin: 1rem auto;
-}
-
-.app .description {
-  position: relative;
-  right: -85%;
 }
 
 .app .bottom {
@@ -101,23 +96,37 @@ h1{
   text-align: start;
   margin: auto;
   margin-top: 10px;
-  background-color: rgba(0, 0, 0, 0.4);
+  background-color: rgba(0, 0, 0, 0.8);
   padding: 1rem;
   border-radius: 12px;
   width: 50%;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: absolute;
+  z-index: 2;
+  left: 25%;
 }
 
 table{
   margin: auto;
+  margin-top: 10px;
   width: 700px;
   text-align: center;
   border-collapse: collapse;
 }
 
 th, td {
-  padding: 15px;
+  padding: 5px;
   border-bottom: 1px solid #ddd;
+}
+
+.title{
+  margin-top: 70px;
+  align-self: center;
+  text-align: center;
+}
+
+.smalllist{
+  margin-top: 10px;
 }

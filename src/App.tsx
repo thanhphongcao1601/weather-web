@@ -1,31 +1,47 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
+import { Routes, Route, useNavigate} from "react-router-dom";
 import axios from 'axios'
 import { City } from './models/city';
-import { AiFillHeart } from "react-icons/ai";
 import { AiOutlineHeart } from "react-icons/ai";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Detail from './components/detail';
+import Constants from './helper/config';
+import { fahrenheitToCelsius } from './helper/function';
+import Home from './components/home';
+import useStore from './zustand/store';
 
 function App() {
   const [location, setLocation] = useState('');
   const [data, setData] = useState({} as City);
-  const url = `https://api.openweathermap.org/data/2.5/weather?q=${location}&appid=0cba9751f041579df4eece69c8c4369e`
+  const url = `${Constants.BASE_URL}?q=${location}&units=imperial&appid=${Constants.API_ID}`
+  const store = useStore();
+  
+  const navigator = useNavigate()
 
-  const searchLocation = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === 'Enter') {
-      axios.get(url).then((response) => {
-        setData(response.data)
-        console.log(response.data)
-      })
-      setLocation('')
-    }
+  const gotoPage = (url: string) => {
+      navigator(url)
   }
-  
-  console.log('re render')
-  
-  const Home = () => {
-    return (
-      <div className="app">
+
+  const searchLocation = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (location === '') {
+      setData({})
+    } else {
+      if (event.key === 'Enter') {
+        axios.get(url).then((response) => {
+          setData(response.data)
+          console.log(response.data)
+        })
+        setLocation('')
+      }
+    }
+  }, [location]);
+
+  const addToFavoriteList = (city: City) => {
+    setData({})
+    store.addCity(city)
+  }
+
+  return (
+    <div className="app">
       <div className="search">
         <input type="text"
           placeholder='Enter your location'
@@ -34,49 +50,30 @@ function App() {
           onKeyPress={(event) => searchLocation(event)}
         />
         {
-          data.id ? <div className="search-result">
+          data.id ? <div className="search-result" onClick={() => addToFavoriteList(data)}>
             <div className="result-value">
               <p className='bold'>{data.name}</p>
-              <text>{data.main?.temp} F</text>
-              <br />
-              <text>{data.weather?.at(0)?.main}</text>
+              <h2>{fahrenheitToCelsius(data.main?.temp ?? 0).toFixed()}℃</h2>
+              <p>{data.weather?.at(0)?.main}</p>
             </div>
             <div className="result-options">
-              <AiOutlineHeart size={30}/>
+              <AiOutlineHeart size={30} />
             </div>
           </div> : null
         }
+        <div className="smalllist">
+          {store.listFavoriteCity.map((city) =>
+            <span onClick={()=>gotoPage(`detail/${city.name}`)}>
+              {city.name} {fahrenheitToCelsius(city.main?.temp ?? 0).toFixed()}℃{'  |  '}
+            </span>
+          )}
+        </div>
       </div>
-      <table>
-        <tbody>
-          <tr>
-            <th>No.</th>
-            <th>Name</th>
-            <th>Favourite</th>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>london</td>
-            <td><AiFillHeart size={25} color='red'/></td>
-          </tr>
-          <tr>
-            <td>1</td>
-            <td>london</td>
-            <td><AiFillHeart size={25} color='red'/></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-    )
-  }
-
-  return (
-    <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Home />}/>
-        <Route path="/detail" element={<Detail />} />
+        <Route path='/' element={<Home />} />
+        <Route path="/detail/:location" element={<Detail />} />
       </Routes>
-    </BrowserRouter>
+    </div>
   );
 }
 
