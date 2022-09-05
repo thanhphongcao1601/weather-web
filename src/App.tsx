@@ -1,28 +1,29 @@
 import React, { useCallback, useState } from 'react';
-import { Routes, Route, useNavigate} from "react-router-dom";
+import { Routes, Route, useNavigate } from "react-router-dom";
 import axios from 'axios'
 import { City } from './models/city';
 import { AiOutlineHeart } from "react-icons/ai";
-import Detail from './components/detail';
 import Constants from './helper/config';
 import { fahrenheitToCelsius } from './helper/function';
-import Home from './components/home';
 import useStore from './zustand/store';
+import Home from './components/Home';
+import Detail from './components/Detail';
+import { Badge, Box, Center, Input, Wrap, Text } from '@chakra-ui/react';
 
 function App() {
-  const [location, setLocation] = useState('');
+  const [cityName, setLocation] = useState('');
   const [data, setData] = useState({} as City);
-  const url = `${Constants.BASE_URL}?q=${location}&units=imperial&appid=${Constants.API_ID}`
+  const url = `${Constants.BASE_URL}?q=${cityName}&units=imperial&appid=${Constants.API_ID}`
   const store = useStore();
-  
+
   const navigator = useNavigate()
 
   const gotoPage = (url: string) => {
-      navigator(url)
+    navigator(url)
   }
 
   const searchLocation = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (location === '') {
+    if (cityName === '') {
       setData({})
     } else {
       if (event.key === 'Enter') {
@@ -33,7 +34,7 @@ function App() {
         setLocation('')
       }
     }
-  }, [location]);
+  }, [cityName]);
 
   const addToFavoriteList = (city: City) => {
     setData({})
@@ -41,39 +42,45 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <div className="search">
-        <input type="text"
-          placeholder='Enter your location'
-          value={location ?? ''}
-          onChange={(event) => setLocation(event.target.value)}
-          onKeyPress={(event) => searchLocation(event)}
-        />
+    <Box className="app">
+      <Box>
+        <Center>
+          <Input
+            marginTop='10px'
+            w='70%'
+            variant='outline'
+            placeholder='Enter your cityName'
+            value={cityName ?? ''}
+            onChange={(event) => setLocation(event.target.value)}
+            onKeyPress={(event) => searchLocation(event)} />
+        </Center>
         {
-          data.id ? <div className="search-result" onClick={() => addToFavoriteList(data)}>
-            <div className="result-value">
-              <p className='bold'>{data.name}</p>
-              <h2>{fahrenheitToCelsius(data.main?.temp ?? 0).toFixed()}℃</h2>
-              <p>{data.weather?.at(0)?.main}</p>
-            </div>
-            <div className="result-options">
-              <AiOutlineHeart size={30} />
-            </div>
-          </div> : null
+          data.id ? <Box className="search-result" onClick={() => addToFavoriteList(data)}>
+            <Box className="result-value">
+              <Text>{data.name}</Text>
+              <Text>{fahrenheitToCelsius(data.main?.temp ?? 0).toFixed()}℃</Text>
+              <Text>{data.weather?.at(0)?.main}</Text>
+            </Box>
+            <AiOutlineHeart size={30} />
+          </Box> : null
         }
-        <div className="smalllist">
-          {store.listFavoriteCity.map((city) =>
-            <span onClick={()=>gotoPage(`detail/${city.name}`)}>
-              {city.name} {fahrenheitToCelsius(city.main?.temp ?? 0).toFixed()}℃{'  |  '}
-            </span>
-          )}
-        </div>
-      </div>
+        <Center>
+          <Wrap marginTop='20px' width='50%'>
+            {store.listFavoriteCity.map((city) =>
+              <Badge variant='outline' colorScheme='green'
+                padding='5px'
+                onClick={() => gotoPage(`detail/${city.name}`)}>
+                {city.name} {fahrenheitToCelsius(city.main?.temp ?? 0).toFixed()}℃
+              </Badge>
+            )}
+          </Wrap>
+        </Center>
+      </Box>
       <Routes>
         <Route path='/' element={<Home />} />
-        <Route path="/detail/:location" element={<Detail />} />
+        <Route path="/detail/:cityName" element={<Detail />} />
       </Routes>
-    </div>
+    </Box>
   );
 }
 
